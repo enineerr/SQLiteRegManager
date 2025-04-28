@@ -69,7 +69,7 @@ class TUI:
         pass
 
     #
-    # TEACHERS
+    # Teachers
     #
     def AddTeacher(self) -> None:
         pass
@@ -98,7 +98,7 @@ class helpMenu:
         msg = {
             "-h --help": "Print this message",
             "-t --tui": "Enable TUI mode",
-            "-d --dbpath <path>": "Set path to DB relative to CWD"
+            "-d --dbpath <path>": "Set path to the data dir relative to CWD"
         }
         # Get max length of cmdflag side of help menu
         maxLengthKey = TUI.maxLineLength(msg.keys()) + 2
@@ -107,7 +107,7 @@ class helpMenu:
         dictCombined = [k + v for k, v in msg.items()]
         # Get max length
         maxLengthLine = TUI.maxLineLength(dictCombined) + 4
- 
+
         print("-" * maxLengthLine)
         for k, v in msg.items():
             # Add a basic separator
