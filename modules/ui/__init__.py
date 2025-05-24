@@ -2,7 +2,6 @@ from pathlib import Path
 from modules.database import DB
 from modules.obj import Student, Teacher, Course, Human
 
-
 class UI:
     def __init__(self, dbpath: Path | None = None):
         if dbpath is None:
@@ -27,6 +26,10 @@ class UI:
 
     @staticmethod
     def checkEmail(inp: str) -> bool:
+        # if blank, allow to continue
+        if inp == "":
+            return True
+
         hasAt = False
         hasDot = False
         for i in inp:
@@ -95,9 +98,8 @@ class GUI(UI):
 
 
 class TUI(UI):
-    # def __init__(self, dbpath: Path | None = None):
-    #     self.dbinit(dbpath)
-
+    # Fairly self explanatory
+    # calculates the longest string length of a list
     @staticmethod
     def maxLineLength(calcLines: list[str]) -> int:
         maxLength = 0
@@ -106,6 +108,7 @@ class TUI(UI):
                 maxLength = len(i)
         return maxLength
 
+    # Take a dict, and print it line by line, separating keys and values using ": "
     @staticmethod
     def printMenu(msg: dict[str, str]) -> None:
         for k, v in msg.items():
@@ -113,29 +116,17 @@ class TUI(UI):
             k += ":"
             print(k, v)
 
-    # @staticmethod
-    # def printPaddedMenu(msg: dict[str, str]) -> None:
-    #     maxLengthKey = TUI.maxLineLength(list(msg.keys())) + 2
-
-    #     # Create a list of combined keys and values for calculation
-    #     dictCombined = [k + v for k, v in msg.items()]
-    #     # Get max length
-    #     maxLengthLine = TUI.maxLineLength(dictCombined) + 4
-
-    #     print("-" * maxLengthLine)
-    #     for k, v in msg.items():
-    #         # Add a basic separator
-    #         k += ": "
-    #         print(k.ljust(maxLengthKey) + v)
-
-    #         print("-" * maxLengthLine)
-
     @staticmethod
     def clear() -> None:
         # I dont like this
         # the day python implements a terminal clear, the world will be whole
         print("\n"*100)
 
+    # Takes a function as an arg,
+    # then takes an input from user,
+    # and uses function to check if valid,
+    # if valid, returns input
+    # else, false
     @staticmethod
     def checkInput(func) -> bool | str:
         inp = input(">>> ")
@@ -146,6 +137,16 @@ class TUI(UI):
             TUI.clear()
             print("Please re-enter, invalid character entered.")
             return False
+
+    # Basic yes or no check
+    @staticmethod
+    def yn() -> str:
+        accepted = False
+        while (accepted is False):
+            print("Is this correct? (y/n)")
+            accepted = TUI.checkInput(TUI.checkYN)
+
+        return accepted
 
     @staticmethod
     def getInfo() -> Human | None:
@@ -215,14 +216,65 @@ class TUI(UI):
         TUI.printMenu(p.printInfo())
         accepted = False
         while (accepted is False):
-            print("Is this correct?")
+            print("Is this correct? (y/n)")
             accepted = TUI.checkInput(TUI.checkYN)
 
         match accepted.lower()[0]:
             case "y": return p
             case "n": return
 
-    # @staticmethod
+    # Generic menu for editing a person's information
+    # Edit menu:
+    # 1-5 choose field to edit, returns 1-5
+    # q exits the menu, returns 0 (would be ID index if used)
+    @staticmethod
+    def editHumanMenu() -> int:
+        msg = {
+            "(1)": "Edit First Name",
+            "(2)": "Edit Middle Name",
+            "(3)": "Edit Last Name",
+            "(4)": "Edit Chosen Name",
+            "(5)": "Edit Email",
+            "(q)": "Go Back"
+        }
+
+        while True:
+            TUI.clear()
+            TUI.printMenu(msg)
+
+            inp = input(">>> ")
+
+            # Process input
+            match inp.lower():
+                case "1" | "2" | "3" | "4" | "5":
+                    return int(inp)
+                case "q": return 0
+                # If invalid input, restart loop, skipping exit
+                case _: continue
+
+    @staticmethod
+    def viewMenu() -> int:
+        # TODO put another layer into this after 2 for sorting records better?
+        msg = {
+            "(1)": "View 1 record",
+            "(2)": "View all records",
+            "(q)": "Go Back"
+        }
+
+        while True:
+            TUI.clear()
+            TUI.printMenu(msg)
+
+            inp = input(">>> ")
+
+            # Process input
+            match inp.lower():
+                case "1" | "2":
+                    return int(inp)
+                case "q": return 0
+                # If invalid input, restart loop, skipping exit
+                case _: continue
+
     def mainMenu(self) -> None:
         msg = {
             "(s)": "Manage Students",
@@ -254,6 +306,7 @@ class TUI(UI):
 
     def passwordUI(self) -> None:
         pass
+    
 
     #
     # Students
@@ -295,29 +348,106 @@ class TUI(UI):
         # Get user's ID
         accepted = False
         while (accepted is False):
+            TUI.clear()
             print("Please enter the ID of the student you want to remove.")
             accepted = TUI.checkInput(TUI.checkINT)
         # Save for lookup
         id = int(accepted)
 
+        # Create (mostly) blank instance, to be filled in later
+        p = Student(Human("", "", "", "", "", id))
         # Get data of ID
-        p = self.db.lookupStudentDB(id)
+        p = Student(self.db.lookupDB(p))
 
+        TUI.clear()
         # Print data about ID
         TUI.printMenu(p.printInfo())
-        accepted = False
-        while (accepted is False):
-            print("Is this correct? (y/n)")
-            accepted = TUI.checkInput(TUI.checkYN)
+        accepted = TUI.yn()
 
         match accepted.lower()[0]:
             case "n": return
             case "y":
                 self.db.delFromDB(p)
 
-
     def editStudent(self) -> None:
-        pass
+        # TODO refactor this and removeStudent()
+        # TODO maybe make it separate functions which do not need hardcoded student/teacher
+        # Get user's ID
+        accepted = False
+        while (accepted is False):
+            TUI.clear()
+            print("Please enter the ID of the student you want to edit.")
+            accepted = TUI.checkInput(TUI.checkINT)
+        # Save for lookup
+        id = int(accepted)
+
+        # Create (mostly) blank instance, to be filled in later
+        p = Student(Human("", "", "", "", "", id))
+        # Get data of ID
+        p = Student(self.db.lookupDB(p))
+
+        TUI.clear()
+        # Print data about ID
+        TUI.printMenu(p.printInfo())
+        accepted = TUI.yn()
+
+        # If wrong, go back a menu
+        if (accepted.lower()[0] == "n"):
+            return
+
+        choice = TUI.editHumanMenu()
+
+        if (choice == 0):
+            return
+
+        msgs = [
+            f"Editing First Name: {p.firstName}",
+            f"Editing Middle Name: {p.middleName}",
+            f"Editing Last Name: {p.lastName}",
+            f"Editing Chosen Name: {p.chosenName}",
+            f"Editing Email address: {p.email}",
+        ]
+
+        accepted = False
+        while (accepted is False):
+            print(msgs[choice - 1])
+            if (choice == 5):
+                accepted = TUI.checkInput(TUI.checkEmail)
+            else:
+                accepted = TUI.checkInput(TUI.checkName)
+
+        match choice:
+            case 1: p.firstName = accepted
+            case 2: p.middleName = accepted
+            case 3: p.lastName = accepted
+            case 4: p.chosenName = accepted
+            case 5: p.email = accepted
+
+        self.db.updateDB(p)
+
+    def viewStudents(self) -> None:
+        choice = TUI.viewMenu()
+        if choice == 1:
+            accepted = False
+            while (accepted is False):
+                TUI.clear()
+                print("Please enter the ID of the student you want to edit.")
+                accepted = TUI.checkInput(TUI.checkINT)
+            # Save for lookup
+            id = int(accepted)
+
+            # Create (mostly) blank instance, to be filled in later
+            p = Student(Human("", "", "", "", "", id))
+            # Get data of ID
+            p = Student(self.db.lookupDB(p))
+
+            TUI.clear()
+            # Print data about ID
+            TUI.printMenu(p.printInfo())
+
+            input("Press enter to return.")
+        # else:
+        #     pass
 
     #
     # Teachers

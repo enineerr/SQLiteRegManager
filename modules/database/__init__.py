@@ -2,6 +2,7 @@ import sqlite3
 from os import chdir
 from pathlib import Path
 from modules import obj
+from .lookup import lookupClass
 
 
 class DB:
@@ -37,6 +38,8 @@ class DB:
         # self.cur = self.con.cursor()
 
         self.initDB()
+
+        self.lookup = lookupClass(self.con)
 
         # self.cur.close()
 
@@ -86,36 +89,40 @@ Email   TEXT)
 
     def saveToDB(self, DBObject: obj.Student | obj.Teacher | obj.Course) -> None:
         cur = self.con.cursor()
+
+        # Handle courses differently, as non default
         match type(DBObject):
-            case obj.Student:
-                cur.execute(f"""\
-INSERT INTO Students (
-"FirstName",
-"MiddleName",
-"LastName",
-"ChosenName",
-"Email")
-VALUES (
+            case obj.Course:
+                # TODO implement courses
+                return
+            # else, set the correct table definition for default option
+            case obj.Student: table = "Students"
+            case obj.Teacher: table = "Teachers"
+
+        cur.execute(f"""\
+INSERT INTO {table} VALUES (
+NULL,
 "{DBObject.firstName}",
 "{DBObject.middleName}",
 "{DBObject.lastName}",
 "{DBObject.chosenName}",
 "{DBObject.email}")
 """)
-            case obj.Teacher:
-                pass
-            case obj.Course:
-                pass
-
+        # Clean up
         cur.close()
         self.con.commit()
 
-    def lookupStudentDB(self, ID: int) -> obj.Student:
+    def lookupDB(self, DBObject: obj.Student | obj.Teacher | obj.Course) -> obj.Human:
+        match type(DBObject):
+            case obj.Student: table = ["Students", "StudentID"]
+            case obj.Teacher: table = ["Teachers", "TeacherID"]
+            case obj.Course: table = ["Courses", "CourseID"]
+
         cur = self.con.cursor()
         # Get student from db
         out = cur.execute(f"""\
-SELECT * FROM Students
-WHERE StudentID="{ID}"
+SELECT * FROM {table[0]}
+WHERE {table[1]}="{DBObject.ID}"
 """)
         # Get student from output
         out = out.fetchone()
@@ -124,16 +131,18 @@ WHERE StudentID="{ID}"
         cur.close()
         self.con.commit()
 
-        # Convert to student object
-        out = obj.Student(obj.Human(
+        # Convert to human object
+        out = obj.Human(
             out[1],  # First name
             out[2],  # Middle Name
             out[3],  # Last Name
             out[4],  # Chosen Name
             out[5],  # Email
             out[0]  # ID number
-        ))
+        )
         return out
+
+    
 
     def delFromDB(self, DBObject: obj.Student | obj.Teacher | obj.Course) -> None:
         # If ID isnt provided, don't try anything
@@ -143,32 +152,37 @@ WHERE StudentID="{ID}"
         cur = self.con.cursor()
 
         match type(DBObject):
-            case obj.Student:
-                cur.execute(f"""\
-DELETE FROM Students WHERE StudentID={DBObject.ID}
-""")
-            case obj.Teacher:
-                pass
-            case obj.Course:
-                pass
+            case obj.Student: table = ["Students", "StudentID"]
+            case obj.Teacher: table = ["Teachers", "TeacherID"]
+            case obj.Course: table = ["Courses", "CourseID"]
 
+        cur.execute(f"""\
+DELETE FROM {table[0]} WHERE {table[1]}={DBObject.ID}
+""")
         # Clean up
         cur.close()
         self.con.commit()
 
-    # def registerToDB(self, DBObject: Student | Teacher, course: Course) -> None:
-    #     match type(DBObject):
-    #         case Student:
-    #             pass
-    #         case Teacher:
-    #             pass
+    def updateDB(self, DBObject: obj.Student | obj.Teacher | obj.Course) -> None:
+        match type(DBObject):
+            case obj.Student: table = ["Students", "StudentID"]
+            case obj.Teacher: table = ["Teachers", "TeacherID"]
+            case obj.Course: table = ["Courses", "CourseID"]
 
-    # def unregisterToDB(self, DBObject: Student | Teacher, course: Course) -> None:
-    #     match type(DBObject):
-    #         case Student:
-    #             pass
-    #         case Teacher:
-    #             pass
+        cur = self.con.cursor()
+        # Update DB record
+        cur.execute(f"""\
+UPDATE {table[0]} SET
+FirstName =     "{DBObject.firstName}",
+MiddleName =    "{DBObject.middleName}",
+LastName =      "{DBObject.lastName}",
+ChosenName =    "{DBObject.chosenName}",
+Email =         "{DBObject.email}"
+WHERE {table[1]} = "{DBObject.ID}"
+""")
+        # Clean up
+        cur.close()
+        self.con.commit()
 
     def close(self):
         # Close db safely

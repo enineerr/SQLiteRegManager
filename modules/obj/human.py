@@ -33,38 +33,3 @@ class Human:
 
 		# return info for printing/use
 		return msg
-
-
-# class Student(Human):
-# 	def __init__(
-# 			self,
-# 			firstName: str,
-# 			middleName: str,
-# 			lastName: str,
-# 			chosenName: str,
-# 			email: str,
-# 			ID: int | None = None
-# 			# add a list of courses that are registered
-# 	) -> None:
-# 		super().__init__(firstName, middleName, lastName, chosenName, email, ID)
-class Student(Human):
-	def __init__(self, Obj: Human) -> None:
-		super().__init__(Obj.firstName, Obj.middleName, Obj.lastName, Obj.chosenName, Obj.email, Obj.ID)
-
-
-class Teacher(Human):
-	def __init__(
-			self,
-			firstName: str,
-			middleName: str,
-			lastName: str,
-			chosenName: str,
-			email: str,
-			ID: int | None = None
-	) -> None:
-		super().__init__(firstName, middleName, lastName, chosenName, email)
-
-
-class Course():
-	def __init__(self) -> None:
-		pass
