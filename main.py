@@ -1,19 +1,22 @@
+
 #!/bin/python
 from sys import argv
 from modules.database import DB
-from os import path as osPath
+from pathlib import Path
 
 
 class Program:
     def __init__(self):
+        self.ui = None
         self.tui = False
         self.dbPath = None
         self.main()
 
     def main(self) -> None:
+        # Send exit code if CMDflags aren't valid
+        check = 0
         # Handle cmdflags
         if len(argv) > 0:
-            check = 0
             while (len(argv) > 0) and (check == 0):
                 # Prepare for valued switch by saving next argv to var if possible
                 # in order to pass to checkArgs()
@@ -34,7 +37,6 @@ class Program:
 
         # Exit if cmdflags are bad
         if check != 0:
-            pass
             exit(check)
 
         # Make sure needed modules are accessible, and decide on TUI or GUI
@@ -43,11 +45,14 @@ class Program:
             print("b")
             exit(1)  # Exit 1 as program failed to run
 
+        # DONT INIT DB HERE, DO IT IN UI, SO CALL UI
         # Init db depending on if path was set
-        if self.dbPath is None:
-            db = DB()
-        else:
-            db = DB(osPath.normpath(self.dbPath))
+        # if self.dbPath is None:
+        #     db = DB()
+        # else:
+        #     db = DB(osPath.normpath(self.dbPath))
+
+        self.mainLoop()
 
     def checkArgs(self, arg: str, value: str) -> int:
         match arg:
@@ -88,10 +93,12 @@ class Program:
         else:
             from modules.ui import GUI as ui
 
+        self.ui = ui(self.dbPath)
+
         return True
 
     def mainLoop(self):
-        pass
+        self.ui.mainMenu()
 
 
 Program()
