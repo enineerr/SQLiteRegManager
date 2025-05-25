@@ -2,10 +2,10 @@ import sqlite3
 from os import chdir
 from pathlib import Path
 from modules import obj
-from .lookup import lookupClass
+from modules.database.lookup import getTable
 
 
-class DB:
+class DB():
     @staticmethod
     def __getWD() -> Path:
         # Get the "modules" directory
@@ -38,8 +38,6 @@ class DB:
         # self.cur = self.con.cursor()
 
         self.initDB()
-
-        self.lookup = lookupClass(self.con)
 
         # self.cur.close()
 
@@ -91,16 +89,18 @@ Email   TEXT)
         cur = self.con.cursor()
 
         # Handle courses differently, as non default
-        match type(DBObject):
-            case obj.Course:
-                # TODO implement courses
-                return
-            # else, set the correct table definition for default option
-            case obj.Student: table = "Students"
-            case obj.Teacher: table = "Teachers"
+        # match type(DBObject):
+        #     case obj.Course:
+        #         # TODO implement courses
+        #         return
+        #     # else, set the correct table definition for default option
+        #     case obj.Student: table = "Students"
+        #     case obj.Teacher: table = "Teachers"
+
+        table = getTable(DBObject)
 
         cur.execute(f"""\
-INSERT INTO {table} VALUES (
+INSERT INTO {table[0]} VALUES (
 NULL,
 "{DBObject.firstName}",
 "{DBObject.middleName}",
@@ -112,38 +112,6 @@ NULL,
         cur.close()
         self.con.commit()
 
-    def lookupDB(self, DBObject: obj.Student | obj.Teacher | obj.Course) -> obj.Human:
-        match type(DBObject):
-            case obj.Student: table = ["Students", "StudentID"]
-            case obj.Teacher: table = ["Teachers", "TeacherID"]
-            case obj.Course: table = ["Courses", "CourseID"]
-
-        cur = self.con.cursor()
-        # Get student from db
-        out = cur.execute(f"""\
-SELECT * FROM {table[0]}
-WHERE {table[1]}="{DBObject.ID}"
-""")
-        # Get student from output
-        out = out.fetchone()
-
-        # Clean up
-        cur.close()
-        self.con.commit()
-
-        # Convert to human object
-        out = obj.Human(
-            out[1],  # First name
-            out[2],  # Middle Name
-            out[3],  # Last Name
-            out[4],  # Chosen Name
-            out[5],  # Email
-            out[0]  # ID number
-        )
-        return out
-
-    
-
     def delFromDB(self, DBObject: obj.Student | obj.Teacher | obj.Course) -> None:
         # If ID isnt provided, don't try anything
         if (DBObject.ID is None):
@@ -151,10 +119,7 @@ WHERE {table[1]}="{DBObject.ID}"
 
         cur = self.con.cursor()
 
-        match type(DBObject):
-            case obj.Student: table = ["Students", "StudentID"]
-            case obj.Teacher: table = ["Teachers", "TeacherID"]
-            case obj.Course: table = ["Courses", "CourseID"]
+        table = getTable(DBObject)
 
         cur.execute(f"""\
 DELETE FROM {table[0]} WHERE {table[1]}={DBObject.ID}
@@ -164,10 +129,7 @@ DELETE FROM {table[0]} WHERE {table[1]}={DBObject.ID}
         self.con.commit()
 
     def updateDB(self, DBObject: obj.Student | obj.Teacher | obj.Course) -> None:
-        match type(DBObject):
-            case obj.Student: table = ["Students", "StudentID"]
-            case obj.Teacher: table = ["Teachers", "TeacherID"]
-            case obj.Course: table = ["Courses", "CourseID"]
+        table = getTable(DBObject)
 
         cur = self.con.cursor()
         # Update DB record

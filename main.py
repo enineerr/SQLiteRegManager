@@ -1,8 +1,8 @@
 
 #!/bin/python
 from sys import argv
-from modules.database import DB
-from pathlib import Path
+# from modules.database import DB
+# from pathlib import Path
 
 
 class Program:
@@ -52,8 +52,6 @@ class Program:
         # else:
         #     db = DB(osPath.normpath(self.dbPath))
 
-        self.mainLoop()
-
     def checkArgs(self, arg: str, value: str) -> int:
         match arg:
             case "tui" | "t": self.tui = True
@@ -61,7 +59,7 @@ class Program:
 
             # Exit condition flags
             case "h" | "help":
-                from modules.ui import helpMenu
+                from modules.ui.helpmenu import helpMenu
                 helpMenu()
                 return 1
             case _:
@@ -89,16 +87,13 @@ class Program:
 
         # Choose UI import based on selected mode
         if self.tui is True:
-            from modules.ui import TUI as ui
+            from modules.ui.tui import TUI as ui
         else:
-            from modules.ui import GUI as ui
+            from modules.ui.gui import GUI as ui
 
         self.ui = ui(self.dbPath)
 
         return True
-
-    def mainLoop(self):
-        self.ui.mainMenu()
 
 
 Program()

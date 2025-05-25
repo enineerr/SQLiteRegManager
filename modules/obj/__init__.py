@@ -1,7 +1,7 @@
-from .human import Human
-from .student import Student
-from .course import Course
-from .teacher import Teacher
+from modules.obj.human import Human
+from modules.obj.student import Student
+from modules.obj.course import Course
+from modules.obj.teacher import Teacher
 
 
 class obj:
