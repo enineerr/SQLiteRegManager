@@ -1,9 +1,9 @@
-from modules.ui.tui.menus import getInfo, printMenu, clear, yn, editHumanMenu, multiMenu
-from modules.ui.tui.terminal import printHuman
-from modules.ui.checkers import checkINT, checkName, checkEmail, sortListsByID
+from modules.ui.tui.menus import getInfo, printMenu, clear, yn, multiMenu
+from modules.ui.tui.terminal import printObj
+from modules.ui.checkers import checkINT, checkName, checkEmail, sortListsByID, findID
 from modules.obj import Student, Teacher, Course, Human
 from modules.database import DB
-from modules.database.lookup import oneRecord, allRecords
+from modules.database.lookup import allRecords
 from modules.ui.tui import human
 
 
@@ -12,11 +12,26 @@ class student(human.human):
         id = getInfo(
             {f"Please enter the ID of the student you want to {msg}.": checkINT}
         )[0]
+        # If user requested to leave, go back a menu
+        if (id is None):
+            return
+
         id = int(id)
         # Convert to object for DB
         p = Student(Human(ID=id))
         # Get data out of DB
-        p.storeLookup(oneRecord(self.db.con.cursor(), p))
+        table = allRecords(self.db.con.cursor(), p)
+        # Get data for specific ID
+        table = findID(table, id)
+
+        p.storeLookup(Human(
+            table[1],  # First name
+            table[2],  # Middle Name
+            table[3],  # Last Name
+            table[4],  # Chosen Name
+            table[5],  # Email
+            table[0]  # ID
+        ))
 
         clear()
         if (p.ID is None):
@@ -66,22 +81,26 @@ class student(human.human):
             "v": "View Students",
             "q": "Go Back"
         }
-        while True:
-            out = multiMenu(msg)
+        # Process kb interupt
+        try:
+            while True:
+                out = multiMenu(msg)
 
-            match out:
-                case "a":
-                    p = self.addHuman()
-                    if (p is not None):
-                        self.db.saveToDB(Student(p))
-                case "r": self.delStudent()
-                case "e":
-                    # Call edit human with the p out from printStudent
-                    # this allows the user to confirm inputted ID
-                    self.editHuman(self.printStudent("edit"))
-                case "v": self.viewStudents()
-                # Exit case
-                case "q": return
+                match out:
+                    case "a":
+                        p = self.addHuman()
+                        if (p is not None):
+                            self.db.saveToDB(Student(p))
+                    case "r": self.delStudent()
+                    case "e":
+                        # Call edit human with the p out from printStudent
+                        # this allows the user to confirm inputted ID
+                        self.editHuman(self.printStudent("edit"))
+                    case "v": self.viewStudents()
+                    # Exit case
+                    case "q": raise KeyboardInterrupt
+        except KeyboardInterrupt:
+            return
 
     def viewAllStudents(self):
         # Sort records by ID number accending
@@ -89,4 +108,12 @@ class student(human.human):
             self.db.con.cursor(),
             Student(Human())
         ))
-        printHuman(IDsort)
+        msg = [
+            "ID",
+            "First Name",
+            "Middle Name",
+            "Last Name",
+            "Chosen Name",
+            "Email"
+        ]
+        printObj(IDsort, msg)

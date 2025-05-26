@@ -1,9 +1,8 @@
-from modules.ui.tui.menus import getInfo, printMenu, clear, yn, editHumanMenu, multiMenu
+from modules.ui.tui.menus import getInfo, printMenu, clear, yn, multiMenu
 from modules.ui.checkers import checkINT, checkName, checkEmail
 from modules.obj import Student, Teacher, Course, Human
 from pathlib import Path
 from modules.database import DB
-from modules.database.lookup import oneRecord
 
 
 class human:
@@ -37,6 +36,9 @@ class human:
         return
 
     def editHuman(self, p: Student | Teacher) -> None:
+        # Handle kb interupt
+        if (p is None):
+            return
         if (p.ID is None):
             input("Please press enter to continue.")
             return
@@ -46,32 +48,39 @@ class human:
         if (choice == "n"):
             return
 
-        # outputs 0, 1, 2, 3, 4, 5
-        choice2 = editHumanMenu()  # which field to edit
+        msg = {
+            "1": "Edit First Name",
+            "2": "Edit Middle Name",
+            "3": "Edit Last Name",
+            "4": "Edit Chosen Name",
+            "5": "Edit Email",
+            "q": "Go Back"
+        }
+        choice2 = multiMenu(msg)  # which field to edit
         match choice2:
-            case 1:
+            case "1":
                 p.firstName = getInfo(
                     {f"Editing First Name: {p.firstName}": checkName}
                 )[0]
-            case 2:
+            case "2":
                 p.middleName = getInfo(
                     {f"Editing middle Name: {p.middleName}": checkName}
                 )[0]
-            case 3:
+            case "3":
                 p.lastName = getInfo(
                     {f"Editing last Name: {p.lastName}": checkName}
                 )[0]
-            case 4:
+            case "4":
                 p.chosenName = getInfo(
                     {f"Editing chosen Name: {p.chosenName}": checkName}
                 )[0]
-            case 5:
+            case "5":
                 p.email = getInfo(
                     {f"Editing First Name: {p.email}": checkName}
                 )[0]
-            # 0 Exits
-            case 0: return
+            case "q": return
 
+        clear()
         # Confirm new info
         printMenu(p.printInfo())
         choice = yn()

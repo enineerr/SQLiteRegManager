@@ -1,11 +1,10 @@
 @staticmethod
 def checkName(inp: str) -> bool:
     for i in inp:
-        if i == " ":
-            return False
-        elif i == "-":
+        if (i == "-"):
             pass
-        elif i.isalpha() is not True:
+        # This elif dirties a match/case
+        elif (i.isalpha() is not True):
             return False
 
     return True
@@ -55,3 +54,18 @@ def sortListsByID(l: list[list[int | str]]) -> list[list[int | str]]:
                 l[i][0] -= l[i+1][0]
                 check = True
     return l
+
+
+@staticmethod
+def findID(l: list[list[int | str]], ID: int) -> list[int | str | None]:
+    for i in l:
+        if (i[0] == ID):
+            return i
+
+    # In case ID wasn't found
+    out = [None]
+    # Skip first part, since that needs to be None for ID
+    for i in range(1, len(l[0])):
+        out.append("")
+    # Return equal length of None
+    return out

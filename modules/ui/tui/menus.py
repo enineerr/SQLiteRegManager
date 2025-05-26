@@ -41,38 +41,42 @@ def validateInput(func) -> bool | str:
 
 @staticmethod
 def yn() -> str:
-    accepted = False
-    while (accepted is False):
-        print("Is this correct? (y/n)")
-        accepted = validateInput(checkYN)
+    try:
+        accepted = False
+        while (accepted is False):
+            print("Is this correct? (y/n)")
+            accepted = validateInput(checkYN)
 
-    return accepted.lower()[:1]  # type: ignore
+        return accepted.lower()[:1]  # type: ignore
+    except KeyboardInterrupt:
+        # When user requests to leave, just output empty string
+        return ""
 
 
-@staticmethod
-def editHumanMenu() -> int:
-    msg = {
-        "(1)": "Edit First Name",
-        "(2)": "Edit Middle Name",
-        "(3)": "Edit Last Name",
-        "(4)": "Edit Chosen Name",
-        "(5)": "Edit Email",
-        "(q)": "Go Back"
-    }
+# @staticmethod
+# def editHumanMenu() -> int:
+#     msg = {
+#         "(1)": "Edit First Name",
+#         "(2)": "Edit Middle Name",
+#         "(3)": "Edit Last Name",
+#         "(4)": "Edit Chosen Name",
+#         "(5)": "Edit Email",
+#         "(q)": "Go Back"
+#     }
 
-    while True:
-        clear()
-        printMenu(msg)
+#     while True:
+#         clear()
+#         printMenu(msg)
 
-        inp = input(">>> ")
+#         inp = input(">>> ")
 
-        # Process input
-        match inp.lower():
-            case "1" | "2" | "3" | "4" | "5":
-                return int(inp)
-            case "q": return 0
-            # If invalid input, restart loop, skipping exit
-            case _: continue
+#         # Process input
+#         match inp.lower():
+#             case "1" | "2" | "3" | "4" | "5":
+#                 return int(inp)
+#             case "q": return 0
+#             # If invalid input, restart loop, skipping exit
+#             case _: continue
 
 
 @staticmethod

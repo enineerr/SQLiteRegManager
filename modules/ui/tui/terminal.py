@@ -52,19 +52,9 @@ def padAllItems(l: list[list[str | int]]) -> list[list[str]]:
 
 
 @staticmethod
-def printHuman(recs: list[list[int | str]]) -> None:
+def printObj(recs: list[list[int | str]], msg: list[str]) -> None:
     # Add header
-    recs.insert(
-        0,
-        [
-            "ID",
-            "First Name",
-            "Middle Name",
-            "Last Name",
-            "Chosen Name",
-            "Email"
-        ]
-    )
+    recs.insert(0, msg)
     recs = padAllItems(recs)
 
     out = ""

@@ -3,7 +3,6 @@ from modules.ui.checkers import checkINT, checkName, checkEmail
 from modules.obj import Student, Teacher, Course, Human
 from pathlib import Path
 from modules.database import DB
-from modules.database.lookup import oneRecord
 from modules.ui.tui import student, teacher, course
 
 
@@ -26,15 +25,20 @@ class TUI(student.student, teacher.teacher, course.course):
             "t": "Manage Teachers",
             "c": "Manage Courses",
             "r": "Manage Registrations",
-            "q": "Exit"
+            "q": "Exit",
+            "Press CTRL+C to go back a menu at any point.": ""
         }
-        # Main loop for whole TUI
-        while True:
-            out = multiMenu(msg)
-            match out:
-                case "s": self.studentMenu()
-                case "t": self.teacherMenu()
-                case "c": self.courseMenu()
-                case "r": self.registrationsMenu()
-                # Exit case
-                case "q": return
+        # Process kb interupt
+        try:
+            # Main loop for whole TUI
+            while True:
+                out = multiMenu(msg)
+                match out:
+                    case "s": self.studentMenu()
+                    case "t": self.teacherMenu()
+                    case "c": self.courseMenu()
+                    case "r": self.registrationsMenu()
+                    # Exit case
+                    case "q": raise KeyboardInterrupt
+        except KeyboardInterrupt:
+            return

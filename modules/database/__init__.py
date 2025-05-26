@@ -88,25 +88,14 @@ Email   TEXT)
     def saveToDB(self, DBObject: obj.Student | obj.Teacher | obj.Course) -> None:
         cur = self.con.cursor()
 
-        # Handle courses differently, as non default
-        # match type(DBObject):
-        #     case obj.Course:
-        #         # TODO implement courses
-        #         return
-        #     # else, set the correct table definition for default option
-        #     case obj.Student: table = "Students"
-        #     case obj.Teacher: table = "Teachers"
-
         table = getTable(DBObject)
+
+        values = DBObject.saveValues()
 
         cur.execute(f"""\
 INSERT INTO {table[0]} VALUES (
 NULL,
-"{DBObject.firstName}",
-"{DBObject.middleName}",
-"{DBObject.lastName}",
-"{DBObject.chosenName}",
-"{DBObject.email}")
+{values}
 """)
         # Clean up
         cur.close()
@@ -131,15 +120,13 @@ DELETE FROM {table[0]} WHERE {table[1]}={DBObject.ID}
     def updateDB(self, DBObject: obj.Student | obj.Teacher | obj.Course) -> None:
         table = getTable(DBObject)
 
+        values = DBObject.updateValues()
+
         cur = self.con.cursor()
         # Update DB record
         cur.execute(f"""\
 UPDATE {table[0]} SET
-FirstName =     "{DBObject.firstName}",
-MiddleName =    "{DBObject.middleName}",
-LastName =      "{DBObject.lastName}",
-ChosenName =    "{DBObject.chosenName}",
-Email =         "{DBObject.email}"
+{values}
 WHERE {table[1]} = "{DBObject.ID}"
 """)
         # Clean up
