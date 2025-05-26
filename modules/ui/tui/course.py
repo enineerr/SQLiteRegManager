@@ -3,7 +3,7 @@ from modules.ui.checkers import checkINT, checkName, checkEmail
 from modules.obj import Student, Teacher, Course, Human
 from pathlib import Path
 from modules.database import DB
-from modules.database.lookup import oneHuman
+from modules.database.lookup import oneRecord
 
 
 class course:

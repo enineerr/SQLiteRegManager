@@ -24,7 +24,7 @@ WHERE {table[1]}="{DBObject.ID}"
     # Convert to human object
     # if ID was invalid:
     if (out is None):
-        out = obj.Human("", "", "", "", "")
+        out = obj.Human()
     # if ID was valid:
     else:
         out = obj.Human(
@@ -40,12 +40,17 @@ WHERE {table[1]}="{DBObject.ID}"
 
 
 @staticmethod
-def allRecords(cur, DBObject: obj.Student | obj.Teacher | obj.Course) -> list[obj.Human] | list[obj.Course]:
-    table = getTable()
+# def allRecords(cur, DBObject: type[obj.Student] | obj.Teacher | obj.Course) -> list[obj.Human] | list[obj.Course]:
+def allRecords(
+    cur,
+    DBObject: obj.Student | obj.Teacher | obj.Course
+) -> list[list[str | int]]:
+
+    table = getTable(DBObject)
 
     # Get student from db
     out = cur.execute(f"""\
-SELECT * FROM {table[0]}"
+SELECT * FROM {table[0]}
 """)
     # Get student from output
     out = out.fetchall()
@@ -60,23 +65,23 @@ SELECT * FROM {table[0]}"
     # Convert to human object
     # if ID was invalid:
     if (out is None):
-        listOut = [obj.Human("", "", "", "", "")]
+        listOut = [[""]]
     # if ID was valid:
     else:
         listOut = []
         for i in out:
             listOut.append(
-                obj.Human(
+                [
+                    i[0],  # ID number
                     i[1],  # First name
                     i[2],  # Middle Name
                     i[3],  # Last Name
                     i[4],  # Chosen Name
-                    i[5],  # Email
-                    i[0]  # ID number
-                )
+                    i[5]  # Email
+                ]
             )
 
-    return out
+    return listOut
 
 
 @staticmethod

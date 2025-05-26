@@ -1,8 +1,9 @@
 from modules.ui.tui.menus import getInfo, printMenu, clear, yn, editHumanMenu, multiMenu
-from modules.ui.checkers import checkINT, checkName, checkEmail
+from modules.ui.tui.terminal import printHuman
+from modules.ui.checkers import checkINT, checkName, checkEmail, sortListsByID
 from modules.obj import Student, Teacher, Course, Human
 from modules.database import DB
-from modules.database.lookup import oneHuman
+from modules.database.lookup import oneRecord, allRecords
 from modules.ui.tui import human
 
 
@@ -13,9 +14,9 @@ class student(human.human):
         )[0]
         id = int(id)
         # Convert to object for DB
-        p = Student(Human("", "", "", "", "", id))
+        p = Student(Human(ID=id))
         # Get data out of DB
-        p.storeLookup(oneHuman(self.db.con.cursor(), p))
+        p.storeLookup(oneRecord(self.db.con.cursor(), p))
 
         clear()
         if (p.ID is None):
@@ -39,7 +40,9 @@ class student(human.human):
                     self.printStudent("view")
                     # Wait for user to return to menu
                     input("Press enter to return.")
-                case "2": self.viewAllStudents()
+                case "2":
+                    self.viewAllStudents()
+                    input("Press enter to return.")
                 # Exit case
                 case "q": return
 
@@ -81,4 +84,9 @@ class student(human.human):
                 case "q": return
 
     def viewAllStudents(self):
-        
+        # Sort records by ID number accending
+        IDsort = sortListsByID(allRecords(
+            self.db.con.cursor(),
+            Student(Human())
+        ))
+        printHuman(IDsort)

@@ -4,11 +4,11 @@
 class Human:
     def __init__(
             self,
-            firstName: str,
-            middleName: str,
-            lastName: str,
-            chosenName: str,
-            email: str,
+            firstName: str = "",
+            middleName: str = "",
+            lastName: str = "",
+            chosenName: str = "",
+            email: str = "",
             ID: int | None = None
     ) -> None:
         self.firstName = firstName.capitalize()
