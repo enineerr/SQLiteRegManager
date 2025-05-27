@@ -53,7 +53,7 @@ class course:
                 )[0]
             case "2":
                 c.level = int(getInfo(
-                    {f"Editing middle Name: {c.level}": checkINT}
+                    {f"Editing Course Level: {c.level}": checkINT}
                 )[0])
             case "q": return
 
@@ -146,7 +146,12 @@ class course:
                     case "a":
                         c = self.addCourse()
                         if (c is not None):
-                            self.db.saveToDB(c)
+                            try:
+                                self.db.saveToDB(c)
+                            # Should never happen but might as well have it
+                            except ValueError:
+                                print("Email address already in use.")
+                                input("Press enter to return.")
                     case "r": self.delCourse()
                     case "e":
                         # Call editCourse with the c out from printCourse

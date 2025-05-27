@@ -42,15 +42,7 @@ class Program:
         # Make sure needed modules are accessible, and decide on TUI or GUI
         # if either fails, exit with error
         if self.checkModules() is False:
-            print("b")
             exit(1)  # Exit 1 as program failed to run
-
-        # DONT INIT DB HERE, DO IT IN UI, SO CALL UI
-        # Init db depending on if path was set
-        # if self.dbPath is None:
-        #     db = DB()
-        # else:
-        #     db = DB(osPath.normpath(self.dbPath))
 
     def checkArgs(self, arg: str, value: str) -> int:
         match arg:

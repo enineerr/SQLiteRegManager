@@ -1,8 +1,6 @@
 from modules.ui.tui.menus import getInfo, printMenu, clear, yn, multiMenu
-from modules.ui.checkers import checkINT, checkName, checkEmail
-from modules.obj import Student, Teacher, Course, Human
-from pathlib import Path
-from modules.database import DB
+from modules.ui.checkers import checkName, checkEmail
+from modules.obj import Student, Teacher, Human
 
 
 class human:
@@ -64,19 +62,19 @@ class human:
                 )[0]
             case "2":
                 p.middleName = getInfo(
-                    {f"Editing middle Name: {p.middleName}": checkName}
+                    {f"Editing Middle Name: {p.middleName}": checkName}
                 )[0]
             case "3":
                 p.lastName = getInfo(
-                    {f"Editing last Name: {p.lastName}": checkName}
+                    {f"Editing Last Name: {p.lastName}": checkName}
                 )[0]
             case "4":
                 p.chosenName = getInfo(
-                    {f"Editing chosen Name: {p.chosenName}": checkName}
+                    {f"Editing Chosen Name: {p.chosenName}": checkName}
                 )[0]
             case "5":
                 p.email = getInfo(
-                    {f"Editing First Name: {p.email}": checkName}
+                    {f"Editing Email: {p.email}": checkEmail}
                 )[0]
             case "q": return
 

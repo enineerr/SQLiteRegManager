@@ -1,9 +1,14 @@
 @staticmethod
 def checkName(inp: str) -> bool:
     for i in inp:
+        # Allow dashes
         if (i == "-"):
             pass
+        # Allow spaces
+        elif (i == " "):
+            pass
         # This elif dirties a match/case
+        # make sure that unless space or dash, its alpha
         elif (i.isalpha() is not True):
             return False
 
@@ -68,4 +73,28 @@ def findID(l: list[list[int | str]], ID: int) -> list[int | str | None]:
     for i in range(1, len(l[0])):
         out.append("")
     # Return equal length of None
+    return out
+
+
+@staticmethod
+def findAllIDs(
+    l: list[list[int | str]],  # Input list of lists
+    ID: int,  # ID to find
+    index: int = 0  # which part of the list inside list to look for ID
+) -> list[list[str | str | None]]:
+    out = []
+    for i in l:
+        if (i[index] == ID):
+            out.append(i)
+
+    # In case ID wasn't found
+    if (out == []):
+        out = [None]
+        # Skip first part, since that needs to be None for ID
+        for i in range(1, len(l[0])):
+            # Fill with blank outputs
+            out.append("")
+        # Place out into a list to mimic list[list[]]
+        out = [out]
+
     return out

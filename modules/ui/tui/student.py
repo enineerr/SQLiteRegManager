@@ -90,7 +90,12 @@ class student(human.human):
                     case "a":
                         p = self.addHuman()
                         if (p is not None):
-                            self.db.saveToDB(Student(p))
+                            try:
+                                self.db.saveToDB(Student(p))
+                            except ValueError:
+                                clear()
+                                print("Email address already in use.")
+                                input("Press enter to return.")
                     case "r": self.delStudent()
                     case "e":
                         # Call edit human with the p out from printStudent

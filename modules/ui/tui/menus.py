@@ -13,7 +13,7 @@ def multiMenu(msg: dict[str, str]) -> str:
         # Printed message building
         printMenu(pmsg)
 
-        inp = input(">>> ")
+        inp = input(">>> ").lower()
 
         # Process input
         # if valid key, return it

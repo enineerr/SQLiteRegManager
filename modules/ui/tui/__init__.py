@@ -24,7 +24,6 @@ class TUI(student.student, teacher.teacher, course.course):
             "s": "Manage Students",
             "t": "Manage Teachers",
             "c": "Manage Courses",
-            "r": "Manage Registrations",
             "q": "Exit",
             "Press CTRL+C to go back a menu at any point.": ""
         }
@@ -37,7 +36,6 @@ class TUI(student.student, teacher.teacher, course.course):
                     case "s": self.studentMenu()
                     case "t": self.teacherMenu()
                     case "c": self.courseMenu()
-                    case "r": self.registrationsMenu()
                     # Exit case
                     case "q": raise KeyboardInterrupt
         except KeyboardInterrupt:

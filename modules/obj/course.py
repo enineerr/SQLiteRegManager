@@ -7,7 +7,7 @@ class Course():
             level: int | None = None,
             ID: int | None = None
     ):
-        self.courseName = courseName
+        self.courseName = courseName.title()
         self.level = level
         self.ID = ID
 
@@ -29,14 +29,8 @@ class Course():
         self.level = out.level
         self.ID = out.ID  # This *should* never do anything
 
-    def saveValues(self) -> str:
-        return f"""\
-"{self.courseName}",
-"{self.level}")
-"""
-
-    def updateValues(self) -> str:
-        return f"""
-CourseName =      "{self.courseName}",
-Level =    "{self.level}"
-"""
+    def saveValues(self) -> dict[str, str | int | None]:
+        return {
+            "CourseName": self.courseName,
+            "Level": self.level
+        }

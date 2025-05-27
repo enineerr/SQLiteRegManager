@@ -36,17 +36,21 @@ def padAllItems(l: list[list[str | int]]) -> list[list[str]]:
         # Get each record individually
         for j in range(len(l[i])):
             # if the length of the value is longer, set it as max for field
-            if (len(l[i][j]) > length[j]):
-                length[j] = len(l[i][j])
+            if (len(str(l[i][j])) > length[j]):
+                length[j] = len(str(l[i][j]))
 
     # Pad data
     for i in range(len(l)):
         for j in range(len(l[i])):
-            # if is ID field, add left side vbar
+            # if is ID field, add both vbars, and pad like int
             if (j == 0):
-                l[i][j] = "|" + l[i][j].rjust(length[j])
-            # always add right side vbar
-            l[i][j] = l[i][j].ljust(length[j]) + "|"
+                l[i][j] = "|" + str(l[i][j]).rjust(length[j]) + "|"
+            # if an int, pad left, and add right vbar
+            elif (type(l[i][j]) is int):
+                l[i][j] = str(l[i][j]).rjust(length[j]) + "|"
+            # if not a number, pad right, and add right vbar
+            else:
+                l[i][j] = l[i][j].ljust(length[j]) + "|"
 
     return l
 
@@ -59,8 +63,7 @@ def printObj(recs: list[list[int | str]], msg: list[str]) -> None:
 
     out = ""
     for i in recs:
-        for j in i:
-            out += j
+        out += "".join(i)
         out += "\n"
 
     clear()

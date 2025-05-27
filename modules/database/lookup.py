@@ -42,7 +42,6 @@ import sqlite3
 
 
 @staticmethod
-# def allRecords(cur, DBObject: type[obj.Student] | obj.Teacher | obj.Course) -> list[obj.Human] | list[obj.Course]:
 def allRecords(
     cur,
     DBObject: obj.Student | obj.Teacher | obj.Course
@@ -50,10 +49,8 @@ def allRecords(
 
     table = getTable(DBObject)
 
-    # Get student from db
-    out = cur.execute(f"""\
-SELECT * FROM {table[0]}
-""")
+    out = cur.execute(f"SELECT * FROM {table[0]}")
+
     # Get student from output
     out = out.fetchall()
 
@@ -72,7 +69,7 @@ SELECT * FROM {table[0]}
                     [
                         i[0],  # ID number
                         i[1],  # Course Name
-                        str(i[2])  # Course level - cast as str for printing
+                        i[2]  # Course level
                     ]
                 )
     else:
@@ -99,10 +96,31 @@ SELECT * FROM {table[0]}
 
 
 @staticmethod
-def getTable(DBObject: obj.Student | obj.Teacher | obj.Course) -> list[str]:
+def getTable(DBObject: obj.Student | obj.Teacher | obj.Course) -> list[str | list[str]]:
     match type(DBObject):
+        # [0] -> Table Name
+        # [1] -> ID Name
+        # [2] -> List of columns
         case obj.Student: table = ["Students", "StudentID"]
         case obj.Teacher: table = ["Teachers", "TeacherID"]
-        case obj.Course: table = ["Courses", "CourseID"]
+        case obj.Course:
+            table = [
+                "Courses",
+                "CourseID",
+                [
+                    "CourseName",
+                    "Level"
+                ]
+            ]
+            # Return now to prevent human Placeholders
+            return table
 
+    # Human Placeholders
+    table.append([
+        "FirstName",
+        "MiddleName",
+        "LastName",
+        "ChosenName",
+        "Email"
+    ])
     return table

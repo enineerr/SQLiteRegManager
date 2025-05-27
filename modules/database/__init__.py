@@ -51,13 +51,16 @@ FirstName    TEXT,
 MiddleName   TEXT,
 LastName TEXT,
 ChosenName  TEXT,
-Email   TEXT)
+Email   TEXT UNIQUE)
 """)
         cur.execute("""\
-CREATE TABLE IF NOT EXISTS StudentCourseRegistrations (
+CREATE TABLE IF NOT EXISTS StudentRegistrations (
+RegistrationID   INTEGER PRIMARY KEY AUTOINCREMENT,
 StudentID   INTEGER,
 CourseID    INTEGER,
 ResgistrationTime   INTEGER,
+UNIQUE(StudentID, CourseID),
+FOREIGN KEY(CourseID) REFERENCES Courses(CourseID),
 FOREIGN KEY(StudentID) REFERENCES Students(StudentID))
 """)
         cur.execute("""\
@@ -67,10 +70,13 @@ CourseName  TEXT,
 Level   INTEGER)
 """)
         cur.execute("""\
-CREATE TABLE IF NOT EXISTS TeacherCourseRegistrations (
+CREATE TABLE IF NOT EXISTS TeacherRegistrations (
+RegistrationID   INTEGER PRIMARY KEY AUTOINCREMENT,
 TeacherID   INTEGER,
 CourseID    INTEGER,
 ResgistrationTime   INTEGER,
+UNIQUE(TeacherID, CourseID),
+FOREIGN KEY(CourseID) REFERENCES Courses(CourseID),
 FOREIGN KEY(TeacherID) REFERENCES Teachers(TeacherID))
 """)
         cur.execute("""\
@@ -80,7 +86,7 @@ FirstName    TEXT,
 MiddleName   TEXT,
 LastName TEXT,
 ChosenName  TEXT,
-Email   TEXT)
+Email   TEXT UNIQUE)
 """)
         cur.close()
         self.con.commit()
@@ -90,13 +96,29 @@ Email   TEXT)
 
         table = getTable(DBObject)
 
+        # takes col names twice, adds "=:" between them
+        # then separates each with ", "
+        # ex. ":FirstName, ..."
+        places = ", ".join(
+            map(
+                lambda a: f":{a}", table[2]
+            )
+        )
+
         values = DBObject.saveValues()
 
-        cur.execute(f"""\
-INSERT INTO {table[0]} VALUES (
-NULL,
-{values}
-""")
+        try:
+            cur.execute(
+                f"INSERT INTO {table[0]} VALUES (NULL, {places})",
+                (values)
+            )
+        # Only reason this would happen is duplicate email addresses
+        except sqlite3.IntegrityError:
+            # Clean up
+            self.con.rollback()
+            cur.close()
+            raise ValueError("Email already registered")
+        #     pass
         # Clean up
         cur.close()
         self.con.commit()
@@ -110,9 +132,10 @@ NULL,
 
         table = getTable(DBObject)
 
-        cur.execute(f"""\
-DELETE FROM {table[0]} WHERE {table[1]}={DBObject.ID}
-""")
+        cur.execute(
+            f"DELETE FROM {table[0]} WHERE {table[1]}=?",
+            (str(DBObject.ID))
+        )
         # Clean up
         cur.close()
         self.con.commit()
@@ -120,15 +143,23 @@ DELETE FROM {table[0]} WHERE {table[1]}={DBObject.ID}
     def updateDB(self, DBObject: obj.Student | obj.Teacher | obj.Course) -> None:
         table = getTable(DBObject)
 
-        values = DBObject.updateValues()
+        values = DBObject.saveValues()
+
+        # takes col names twice, adds "=:" between them
+        # then separates each with ", "
+        # ex. "FirstName=:FirstName, ..."
+        places = ", ".join(
+            map(
+                lambda a, b: f"{a}=:{b}", table[2], table[2]
+            )
+        )
 
         cur = self.con.cursor()
         # Update DB record
-        cur.execute(f"""\
-UPDATE {table[0]} SET
-{values}
-WHERE {table[1]} = "{DBObject.ID}"
-""")
+        cur.execute(
+            f"UPDATE {table[0]} SET {places} WHERE {table[1]}={DBObject.ID}",
+            (values)
+        )
         # Clean up
         cur.close()
         self.con.commit()
