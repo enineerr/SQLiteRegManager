@@ -1,9 +1,9 @@
 from modules.ui.tui.menus import getInfo, printMenu, clear, yn, multiMenu
 from modules.ui.tui.terminal import printObj
-from modules.ui.checkers import checkINT, checkName, checkEmail, sortListsByID, findID
-from modules.obj import Student, Teacher, Course, Human
+from modules.ui.checkers import checkINT, checkName, checkEmail, sortListsByID, findID, findAllIDs
+from modules.obj import Student, Teacher, Course, Human, sReg, tReg, Reg
 from modules.database import DB
-from modules.database.lookup import allRecords
+from modules.database.lookup import allRecords, getRegistrations
 from modules.ui.tui import human
 
 
@@ -41,7 +41,7 @@ class teacher(human.human):
 
         return p
 
-    def viewTeachers(self):
+    def viewTeachers(self) -> None:
         msg = {
             "1": "Teacher ID lookup",
             "2": "View all Teachers",
@@ -79,6 +79,7 @@ class teacher(human.human):
             "r": "Remove Teacher",
             "e": "Edit Teacher",
             "v": "View Teachers",
+            "c": "Course Registrations",
             "q": "Go Back"
         }
         # Process kb interupt
@@ -102,12 +103,13 @@ class teacher(human.human):
                         # this allows the user to confirm inputted ID
                         self.editHuman(self.printTeacher("edit"))
                     case "v": self.viewTeachers()
+                    case "c": self.regTeacherMenu()
                     # Exit case
                     case "q": raise KeyboardInterrupt
         except KeyboardInterrupt:
             return
 
-    def viewAllTeachers(self):
+    def viewAllTeachers(self) -> None:
         # Sort records by ID number accending
         IDsort = sortListsByID(allRecords(
             self.db.con.cursor(),
@@ -122,3 +124,128 @@ class teacher(human.human):
             "Email"
         ]
         printObj(IDsort, msg)
+
+    def regTeacherMenu(self) -> None:
+        msg = {
+            "1": "Register Teacher to Course",
+            "2": "Deregister Teacher from Course",
+            "3": "View Registrations By IDs",
+            "4": "View All Registrations",
+            "q": "Go Back"
+        }
+        while True:
+            try:
+                out = multiMenu(msg)
+
+                match out:
+                    case "1":
+                        self.registerTeacher()
+                    case "2":
+                        self.deregisterTeacher()
+                    case "3":
+                        try:
+                            r = self.getTReg(["view", "view"])
+                            # If they returned from the menu, just start over
+                            if (r is None):
+                                continue
+                            self.viewTRegs(r)
+                            input("Press enter to return.")
+                        except KeyboardInterrupt:
+                            pass
+                    case "4":
+                        self.viewTRegs()
+                        input("Press enter to return.")
+                    # Exit case
+                    case "q": return
+            except KeyboardInterrupt:
+                return
+
+    def registerTeacher(self) -> None:
+        try:
+            r = self.getTReg(
+                [
+                    "register",
+                    "register to"
+                ]
+            )
+            if (r is None):
+                return
+            # Save reg to db
+            try:
+                self.db.saveToDB(r)
+            except ValueError:
+                clear()
+                print("Teacher has already been registered for this course.")
+                input("Press enter to return.")
+        except KeyboardInterrupt:
+            return
+
+    def deregisterTeacher(self) -> None:
+        try:
+            r = self.getTReg(
+                [
+                    "deregister",
+                    "deregister from"
+                ]
+            )
+            if (r is None):
+                return
+            filtered = self.viewTRegs(r)
+            choice = yn()
+            if (choice == "n"):
+                return
+            self.db.delFromDB(tReg(Reg(ID=filtered[0][8])))
+
+        except KeyboardInterrupt:
+            return
+
+    def getTReg(self, msg: list[str]) -> sReg | None:
+        # Get student ID and info
+        p = self.printTeacher(msg[0])
+        if (p is None):
+            return
+        # Check if correct
+        choice = yn()
+        if (choice == "n"):
+            return
+        # If p ID was invalid, exit
+        if (p.ID is None):
+            return
+
+        # Get course ID and info
+        c = self.printCourse(msg[1])
+        if (c is None):
+            return
+        # Check if correct
+        choice = yn()
+        if (choice == "n"):
+            return
+        # If c ID was invalid, exit
+        if (c.ID is None):
+            return
+
+        return tReg(Reg(p.ID, c.ID))
+
+    def viewTRegs(self, obj: tReg = tReg(Reg())) -> list[list[str | int]]:
+        # Get all records
+        filtered = getRegistrations(self.db.con.cursor(), obj)
+        # If IDs were specified, filter the list
+        if (obj.cID is not None):
+            filtered = findAllIDs(filtered, obj.hID, 0)
+            filtered = findAllIDs(filtered, obj.cID, 4)
+
+        printObj(
+            filtered,
+            [
+                "TID",
+                "First Name",
+                "Last Name",
+                "Chosen Name",
+                "Course ID",
+                "Course Name",
+                "Level",
+                "Registration Time",
+                "RID"
+            ]
+        )
+        return filtered

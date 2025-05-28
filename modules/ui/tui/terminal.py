@@ -1,6 +1,9 @@
+from copy import deepcopy
+
+
 @staticmethod
 def clear():
-    # I dont like this
+    # I don't like this
     # the day python implements a terminal clear, the world will be whole
     print("\n"*100)
 
@@ -23,7 +26,8 @@ def printMenu(msg: dict[str, str]) -> None:
 
 
 @staticmethod
-def padAllItems(l: list[list[str | int]]) -> list[list[str]]:
+def padAllItems(inL: list[list[str | int]]) -> list[list[str]]:
+    l = deepcopy(inL)
     # Create length list for comparison
     length = []
     for i in range(len(l[0])):
@@ -31,8 +35,6 @@ def padAllItems(l: list[list[str | int]]) -> list[list[str]]:
 
     # Find longest data for each field
     for i in range(len(l)):
-        # Make each ID a str for manipulation
-        l[i][0] = str(l[i][0])
         # Get each record individually
         for j in range(len(l[i])):
             # if the length of the value is longer, set it as max for field
@@ -42,22 +44,22 @@ def padAllItems(l: list[list[str | int]]) -> list[list[str]]:
     # Pad data
     for i in range(len(l)):
         for j in range(len(l[i])):
-            # if is ID field, add both vbars, and pad like int
-            if (j == 0):
-                l[i][j] = "|" + str(l[i][j]).rjust(length[j]) + "|"
             # if an int, pad left, and add right vbar
-            elif (type(l[i][j]) is int):
+            if (type(l[i][j]) is int):
                 l[i][j] = str(l[i][j]).rjust(length[j]) + "|"
             # if not a number, pad right, and add right vbar
             else:
-                l[i][j] = l[i][j].ljust(length[j]) + "|"
+                l[i][j] = str(l[i][j]).ljust(length[j]) + "|"
+            if (j == 0):
+                l[i][j] = "|" + l[i][j]
 
     return l
 
 
 @staticmethod
-def printObj(recs: list[list[int | str]], msg: list[str]) -> None:
+def printObj(recsIn: list[list[int | str]], msg: list[str]) -> None:
     # Add header
+    recs = deepcopy(recsIn)
     recs.insert(0, msg)
     recs = padAllItems(recs)
 

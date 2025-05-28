@@ -6,6 +6,7 @@ from modules.database import DB
 from modules.database.lookup import allRecords
 from modules.ui.tui import human
 
+
 class course:
     def addCourse(self) -> Course | None:
         info = getInfo({
@@ -66,36 +67,6 @@ class course:
 
         # Update the db with the new information
         self.db.updateDB(c)
-
-    def printCourse(self, msg):
-        id = getInfo(
-            {f"Please enter the ID of the course you want to {msg}.": checkINT}
-        )[0]
-        # If user requested to leave, go back a menu
-        if (id is None):
-            return
-
-        id = int(id)
-        # Convert to object for DB
-        c = Course(ID=id)
-        # Get data out of DB
-        table = allRecords(self.db.con.cursor(), c)
-        # Get data for specific ID
-        table = findID(table, id)
-
-        c.storeLookup(Course(
-            table[1],  # Course Name
-            table[2],  # Course level
-            table[0]  # Course ID
-        ))
-
-        clear()
-        if (c.ID is None):
-            print("There is no record for this course ID")
-        # Prints current info for ID
-        printMenu(c.printInfo())
-
-        return c
 
     def viewCourses(self):
         msg = {
@@ -175,3 +146,33 @@ class course:
             "Level"
         ]
         printObj(IDsort, msg)
+
+    def printCourse(self, msg):
+        id = getInfo(
+            {f"Please enter the ID of the course you want to {msg}.": checkINT}
+        )[0]
+        # If user requested to leave, go back a menu
+        if (id is None):
+            return
+
+        id = int(id)
+        # Convert to object for DB
+        c = Course(ID=id)
+        # Get data out of DB
+        table = allRecords(self.db.con.cursor(), c)
+        # Get data for specific ID
+        table = findID(table, id)
+
+        c.storeLookup(Course(
+            table[1],  # Course Name
+            table[2],  # Course level
+            table[0]  # Course ID
+        ))
+
+        clear()
+        if (c.ID is None):
+            print("There is no record for this course ID")
+        # Prints current info for ID
+        printMenu(c.printInfo())
+
+        return c

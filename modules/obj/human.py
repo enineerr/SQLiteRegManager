@@ -1,6 +1,3 @@
-# from modules.database.lookup import oneHuman
-
-
 class Human:
     def __init__(
             self,

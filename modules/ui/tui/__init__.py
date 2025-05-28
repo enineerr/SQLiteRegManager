@@ -7,16 +7,21 @@ from modules.ui.tui import student, teacher, course
 
 
 class TUI(student.student, teacher.teacher, course.course):
-    def __init__(self, dbpath: Path | None = None):
+    def __init__(self, dbpath: str | None = None):
         # Init DB
         if dbpath is None:
             self.db = DB()
         else:
-            self.db = DB(dbpath)
+            self.db = DB(Path(dbpath))
 
-        # encrpytion setup
+        try:
+            self.mainMenu()
+        # Doesn't matter the error, just make sure the db closes.
+        # then throw it back again
+        except Exception as e:
+            self.db.close()
+            raise e
 
-        self.mainMenu()
         self.db.close()
 
     def mainMenu(self) -> None:

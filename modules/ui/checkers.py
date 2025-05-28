@@ -7,6 +7,9 @@ def checkName(inp: str) -> bool:
         # Allow spaces
         elif (i == " "):
             pass
+        # Allow periods for titles
+        elif (i == "."):
+            pass
         # This elif dirties a match/case
         # make sure that unless space or dash, its alpha
         elif (i.isalpha() is not True):
@@ -81,7 +84,7 @@ def findAllIDs(
     l: list[list[int | str]],  # Input list of lists
     ID: int,  # ID to find
     index: int = 0  # which part of the list inside list to look for ID
-) -> list[list[str | str | None]]:
+) -> list[list[str | int | None]]:
     out = []
     for i in l:
         if (i[index] == ID):

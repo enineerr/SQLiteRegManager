@@ -58,7 +58,7 @@ CREATE TABLE IF NOT EXISTS StudentRegistrations (
 RegistrationID   INTEGER PRIMARY KEY AUTOINCREMENT,
 StudentID   INTEGER,
 CourseID    INTEGER,
-ResgistrationTime   INTEGER,
+RegistrationTime   TIMESTAMP,
 UNIQUE(StudentID, CourseID),
 FOREIGN KEY(CourseID) REFERENCES Courses(CourseID),
 FOREIGN KEY(StudentID) REFERENCES Students(StudentID))
@@ -74,7 +74,7 @@ CREATE TABLE IF NOT EXISTS TeacherRegistrations (
 RegistrationID   INTEGER PRIMARY KEY AUTOINCREMENT,
 TeacherID   INTEGER,
 CourseID    INTEGER,
-ResgistrationTime   INTEGER,
+RegistrationTime   TIMESTAMP,
 UNIQUE(TeacherID, CourseID),
 FOREIGN KEY(CourseID) REFERENCES Courses(CourseID),
 FOREIGN KEY(TeacherID) REFERENCES Teachers(TeacherID))
@@ -91,7 +91,10 @@ Email   TEXT UNIQUE)
         cur.close()
         self.con.commit()
 
-    def saveToDB(self, DBObject: obj.Student | obj.Teacher | obj.Course) -> None:
+    def saveToDB(
+            self,
+            DBObject: obj.Student | obj.Teacher | obj.Course | obj.sReg | obj.tReg
+    ) -> None:
         cur = self.con.cursor()
 
         table = getTable(DBObject)
@@ -105,25 +108,28 @@ Email   TEXT UNIQUE)
             )
         )
 
+        cols = ", ".join(table[2])
+
         values = DBObject.saveValues()
 
         try:
             cur.execute(
-                f"INSERT INTO {table[0]} VALUES (NULL, {places})",
+                f"INSERT INTO {table[0]} ({cols}) VALUES ({places})",
                 (values)
             )
         # Only reason this would happen is duplicate email addresses
         except sqlite3.IntegrityError:
+            raise ValueError("Record already registered")
+        finally:
             # Clean up
-            self.con.rollback()
             cur.close()
-            raise ValueError("Email already registered")
-        #     pass
-        # Clean up
-        cur.close()
-        self.con.commit()
+            self.con.commit()
 
-    def delFromDB(self, DBObject: obj.Student | obj.Teacher | obj.Course) -> None:
+    # def delFromDB(self, DBObject: obj.Student | obj.Teacher | obj.Course) -> None:
+    def delFromDB(
+            self,
+            DBObject: obj.Student | obj.Teacher | obj.Course | obj.sReg | obj.tReg
+    ) -> None:
         # If ID isnt provided, don't try anything
         if (DBObject.ID is None):
             return
@@ -140,7 +146,11 @@ Email   TEXT UNIQUE)
         cur.close()
         self.con.commit()
 
-    def updateDB(self, DBObject: obj.Student | obj.Teacher | obj.Course) -> None:
+    # def updateDB(self, DBObject: obj.Student | obj.Teacher | obj.Course) -> None:
+    def updateDB(
+            self,
+            DBObject: obj.Student | obj.Teacher | obj.Course | obj.sReg | obj.tReg
+    ) -> None:
         table = getTable(DBObject)
 
         values = DBObject.saveValues()

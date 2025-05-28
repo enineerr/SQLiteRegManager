@@ -5,6 +5,18 @@ from sys import argv
 # from pathlib import Path
 
 
+# I apologize for this code base
+# it is not efficient
+# there is duplicate code
+# it links backwards and forwards
+# its a bit more hard coded than I like
+# I just ran out of patience for my hands
+# enjoy the awful table generater at modules.ui.terminal.padAllItems()
+# I couldn't figure it out the next day
+
+# I dislike the requirement to implement a sorting/filtering algorithm
+# thats SQL's job
+# CU wants it, so they are implemented anyway
 class Program:
     def __init__(self):
         self.ui = None

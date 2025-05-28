@@ -25,3 +25,7 @@ have the database handler make a full backup before opening the database
 	(2): Edit First name
 	(3): Edit First name
 	>>>
+
+
+### REGISTRATIONS
+	MAKE SURE ALL REGS ARE DELETED ALONG WITH THE TEACHERS/STUDENTS when deleting teachers/students

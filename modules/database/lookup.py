@@ -1,51 +1,62 @@
 from modules import obj
-import sqlite3
+from datetime import datetime
 
 
-# I am not allowed to use WHERE for this...
-# Replaced with allRecords() + search algo
-# @staticmethod
-# def oneRecord(cur, DBObject: obj.Student | obj.Teacher | obj.Course) -> obj.Human | obj.Course:
-#     table = getTable(DBObject)
+@staticmethod
+def getRegistrations(cur, DBObject: obj.sReg | obj.tReg) -> list[list[str | int | datetime]]:
+    match type(DBObject):
+        case obj.sReg:
+            cur.execute("""\
+SELECT Students.StudentID, Students.FirstName, Students.LastName, Students.ChosenName,
+Courses.CourseID, Courses.CourseName, Courses.Level,
+StudentRegistrations.RegistrationTime, StudentRegistrations.RegistrationID
+FROM
+(
+Students RIGHT JOIN  StudentRegistrations ON Students.StudentID=StudentRegistrations.StudentID
+LEFT JOIN  Courses ON StudentRegistrations.CourseID = Courses.CourseID
+)
+""")
+        case obj.tReg:
+            cur.execute("""\
+SELECT Teachers.TeacherID, Teachers.FirstName, Teachers.LastName, Teachers.ChosenName,
+Courses.CourseID, Courses.CourseName, Courses.Level,
+TeacherRegistrations.RegistrationTime, TeacherRegistrations.RegistrationID
+FROM
+(
+Teachers RIGHT JOIN TeacherRegistrations ON Teachers.TeacherID=TeacherRegistrations.TeacherID
+LEFT JOIN Courses ON TeacherRegistrations.CourseID = Courses.CourseID
+)
+""")
 
-#     # Get student from db
-#     out = cur.execute(f"""\
-# SELECT * FROM {table[0]}
-# WHERE {table[1]}="{DBObject.ID}"
-# """)
-#     # Get student from output
-#     out = out.fetchone()
-
-#     # Clean up
-#     cur.close()
-
-#     if (type(DBObject) is obj.Course):
-#         # do course handling and return
-#         pass
-
-#     # Convert to human object
-#     # if ID was invalid:
-#     if (out is None):
-#         out = obj.Human()
-#     # if ID was valid:
-#     else:
-#         out = obj.Human(
-#             out[1],  # First name
-#             out[2],  # Middle Name
-#             out[3],  # Last Name
-#             out[4],  # Chosen Name
-#             out[5],  # Email
-#             out[0]  # ID number
-#         )
-
-#     return out
-
+    out = cur.fetchall()
+    # Convert to list of human-like objects
+    # if ID was invalid:
+    if (out == []):
+        listOut = [["", "", "", ""]]
+    # if table was not empty:
+    else:
+        listOut = []
+        for i in out:
+            listOut.append(
+                [
+                    i[0],  # hID
+                    i[1],  # FirstName
+                    i[2],  # LastName
+                    i[3],  # ChosenName
+                    i[4],  # CourseID
+                    i[5],  # CourseName
+                    i[6],  # Level
+                    datetime.fromisoformat(i[7]),  # Reg Time
+                    i[8]  # RegistrationID
+                ]
+            )
+    return listOut
 
 @staticmethod
 def allRecords(
     cur,
     DBObject: obj.Student | obj.Teacher | obj.Course
-) -> list[list[str | int]]:
+) -> list[list[str | int | datetime]]:
 
     table = getTable(DBObject)
 
@@ -57,46 +68,67 @@ def allRecords(
     # Clean up
     cur.close()
 
-    if (type(DBObject) is obj.Course):
-        # Convert to list of course-like objects
-        # if table was empty:
-        if (out == []):
-            listOut = [["", "", ""]]
-        else:
-            listOut = []
-            for i in out:
-                listOut.append(
-                    [
-                        i[0],  # ID number
-                        i[1],  # Course Name
-                        i[2]  # Course level
-                    ]
-                )
-    else:
-        # Convert to list of human-like objects
-        # if ID was invalid:
-        if (out == []):
-            listOut = [["", "", "", "", "", ""]]
-        # if table was not empty:
-        else:
-            listOut = []
-            for i in out:
-                listOut.append(
-                    [
-                        i[0],  # ID number
-                        i[1],  # First name
-                        i[2],  # Middle Name
-                        i[3],  # Last Name
-                        i[4],  # Chosen Name
-                        i[5]  # Email
-                    ]
-                )
+    # For some reason, types won't work here.
+    match table[0]:
+        case "Courses":
+            # Convert to list of course-like objects
+            # if table was empty:
+            if (out == []):
+                listOut = [["", "", ""]]
+            else:
+                listOut = []
+                for i in out:
+                    listOut.append(
+                        [
+                            i[0],  # ID number
+                            i[1],  # Course Name
+                            i[2]  # Course level
+                        ]
+                    )
+        case "StudentRegistrations" | "TeacherRegistrations":
+            # Convert to list of reg-like objects
+            # if ID was invalid:
+            if (out == []):
+                listOut = [["", "", "", ""]]
+            # if table was not empty:
+            else:
+                listOut = []
+                for i in out:
+                    listOut.append(
+                        [
+                            i[0],  # ID number
+                            i[1],  # Human ID
+                            i[2],  # Course ID
+                            datetime.fromtimestamp(i[3]),  # Reg Time
+                        ]
+                    )
+        case _:
+            # Convert to list of human-like objects
+            # if ID was invalid:
+            if (out == []):
+                listOut = [["", "", "", "", "", ""]]
+            # if table was not empty:
+            else:
+                listOut = []
+                for i in out:
+                    listOut.append(
+                        [
+                            i[0],  # ID number
+                            i[1],  # First name
+                            i[2],  # Middle Name
+                            i[3],  # Last Name
+                            i[4],  # Chosen Name
+                            i[5]  # Email
+                        ]
+                    )
 
     return listOut
 
 
 @staticmethod
-def getTable(DBObject: obj.Student | obj.Teacher | obj.Course) -> list[str | list[str]]:
+def getTable(
+    DBObject: obj.Student | obj.Teacher | obj.Course | obj.sReg | obj.tReg
+) -> list[str | list[str]]:
     match type(DBObject):
         # [0] -> Table Name
         # [1] -> ID Name
@@ -110,6 +142,30 @@ def getTable(DBObject: obj.Student | obj.Teacher | obj.Course) -> list[str | lis
                 [
                     "CourseName",
                     "Level"
+                ]
+            ]
+            # Return now to prevent human Placeholders
+            return table
+        case obj.sReg:
+            table = [
+                "StudentRegistrations",
+                "RegistrationID",
+                [
+                    "StudentID",
+                    "CourseID",
+                    "RegistrationTime"
+                ]
+            ]
+            # Return now to prevent human Placeholders
+            return table
+        case obj.tReg:
+            table = [
+                "TeacherRegistrations",
+                "RegistrationID",
+                [
+                    "TeacherID",
+                    "CourseID",
+                    "RegistrationTime"
                 ]
             ]
             # Return now to prevent human Placeholders
