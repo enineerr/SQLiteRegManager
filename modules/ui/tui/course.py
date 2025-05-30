@@ -1,13 +1,75 @@
 from modules.ui.tui.menus import getInfo, printMenu, clear, yn, multiMenu
 from modules.ui.tui.terminal import printObj
-from modules.ui.checkers import checkINT, checkName, checkEmail, sortListsByID, findID
-from modules.obj import Student, Teacher, Course, Human
-from modules.database import DB
+from modules.ui.checkers import checkINT, checkName, sortListsByID, findID
+from modules.obj import Course
 from modules.database.lookup import allRecords
-from modules.ui.tui import human
 
 
 class course:
+    def courseMenu(self) -> None:
+        msg = {
+            "a": "Add Course",
+            "r": "Remove Course",
+            "e": "Edit Course",
+            "v": "View Courses",
+            "q": "Go Back"
+        }
+        # Process kb interupt
+        try:
+            while True:
+                out = multiMenu(msg)
+
+                match out:
+                    case "a":
+                        c = self.addCourse()
+                        if (c is not None):
+                            try:
+                                self.db.saveToDB(c)
+                            # Should never happen but might as well have it
+                            except ValueError:
+                                print("Email address already in use.")
+                                input("Press enter to return.")
+                    case "r": self.delCourse()
+                    case "e":
+                        # Call editCourse with the c out from printCourse
+                        # this allows the user to confirm inputted ID
+                        self.editCourse(self.printCourse("edit"))
+                    case "v": self.viewCourses()
+                    # Exit case
+                    case "q": raise KeyboardInterrupt
+        except KeyboardInterrupt:
+            return
+
+    def printCourse(self, msg):
+        id = getInfo(
+            {f"Please enter the ID of the course you want to {msg}.": checkINT}
+        )[0]
+        # If user requested to leave, go back a menu
+        if (id is None):
+            return
+
+        id = int(id)
+        # Convert to object for DB
+        c = Course(ID=id)
+        # Get data out of DB
+        table = allRecords(self.db.con.cursor(), c)
+        # Get data for specific ID
+        table = findID(table, id)
+
+        c.storeLookup(Course(
+            table[1],  # Course Name
+            table[2],  # Course level
+            table[0]  # Course ID
+        ))
+
+        clear()
+        if (c.ID is None):
+            print("There is no record for this course ID")
+        # Prints current info for ID
+        printMenu(c.printInfo())
+
+        return c
+
     def addCourse(self) -> Course | None:
         info = getInfo({
             "Please enter the name of the course": checkName,
@@ -88,52 +150,6 @@ class course:
                 # Exit case
                 case "q": return
 
-    def delCourse(self):
-        # Get ID and print for confirmation
-        # then save object it to c
-        c = self.printCourse("delete")
-
-        choice = yn()
-        # If correct, get DB to drop
-        if (choice == "y"):
-            self.db.delFromDB(c)
-        # Any other case, just go to last menu
-        return
-
-    def courseMenu(self) -> None:
-        msg = {
-            "a": "Add Course",
-            "r": "Remove Course",
-            "e": "Edit Course",
-            "v": "View Courses",
-            "q": "Go Back"
-        }
-        # Process kb interupt
-        try:
-            while True:
-                out = multiMenu(msg)
-
-                match out:
-                    case "a":
-                        c = self.addCourse()
-                        if (c is not None):
-                            try:
-                                self.db.saveToDB(c)
-                            # Should never happen but might as well have it
-                            except ValueError:
-                                print("Email address already in use.")
-                                input("Press enter to return.")
-                    case "r": self.delCourse()
-                    case "e":
-                        # Call editCourse with the c out from printCourse
-                        # this allows the user to confirm inputted ID
-                        self.editCourse(self.printCourse("edit"))
-                    case "v": self.viewCourses()
-                    # Exit case
-                    case "q": raise KeyboardInterrupt
-        except KeyboardInterrupt:
-            return
-
     def viewAllCourses(self):
         # Sort records by ID number accending
         IDsort = sortListsByID(allRecords(
@@ -147,32 +163,14 @@ class course:
         ]
         printObj(IDsort, msg)
 
-    def printCourse(self, msg):
-        id = getInfo(
-            {f"Please enter the ID of the course you want to {msg}.": checkINT}
-        )[0]
-        # If user requested to leave, go back a menu
-        if (id is None):
-            return
+    def delCourse(self):
+        # Get ID and print for confirmation
+        # then save object it to c
+        c = self.printCourse("delete")
 
-        id = int(id)
-        # Convert to object for DB
-        c = Course(ID=id)
-        # Get data out of DB
-        table = allRecords(self.db.con.cursor(), c)
-        # Get data for specific ID
-        table = findID(table, id)
-
-        c.storeLookup(Course(
-            table[1],  # Course Name
-            table[2],  # Course level
-            table[0]  # Course ID
-        ))
-
-        clear()
-        if (c.ID is None):
-            print("There is no record for this course ID")
-        # Prints current info for ID
-        printMenu(c.printInfo())
-
-        return c
+        choice = yn()
+        # If correct, get DB to drop
+        if (choice == "y"):
+            self.db.delFromDB(c)
+        # Any other case, just go to last menu
+        return

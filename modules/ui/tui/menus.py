@@ -53,32 +53,6 @@ def yn() -> str:
         return ""
 
 
-# @staticmethod
-# def editHumanMenu() -> int:
-#     msg = {
-#         "(1)": "Edit First Name",
-#         "(2)": "Edit Middle Name",
-#         "(3)": "Edit Last Name",
-#         "(4)": "Edit Chosen Name",
-#         "(5)": "Edit Email",
-#         "(q)": "Go Back"
-#     }
-
-#     while True:
-#         clear()
-#         printMenu(msg)
-
-#         inp = input(">>> ")
-
-#         # Process input
-#         match inp.lower():
-#             case "1" | "2" | "3" | "4" | "5":
-#                 return int(inp)
-#             case "q": return 0
-#             # If invalid input, restart loop, skipping exit
-#             case _: continue
-
-
 @staticmethod
 def getInfo(inp: dict) -> list[str | None]:
     try:

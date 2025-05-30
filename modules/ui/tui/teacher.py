@@ -1,14 +1,48 @@
 from modules.ui.tui.menus import getInfo, printMenu, clear, yn, multiMenu
 from modules.ui.tui.terminal import printObj
-from modules.ui.checkers import checkINT, checkName, checkEmail, sortListsByID, findID, findAllIDs
-from modules.obj import Student, Teacher, Course, Human, sReg, tReg, Reg
-from modules.database import DB
+from modules.ui.checkers import checkINT, sortListsByID, findID, findAllIDs
+from modules.obj import Teacher, Human, tReg, Reg
 from modules.database.lookup import allRecords, getRegistrations
 from modules.ui.tui import human
 
 
 class teacher(human.human):
-    def printTeacher(self, msg):
+    def teacherMenu(self) -> None:
+        msg = {
+            "a": "Add Teacher",
+            "r": "Remove Teacher",
+            "e": "Edit Teacher",
+            "v": "View Teachers",
+            "c": "Course Registrations",
+            "q": "Go Back"
+        }
+        # Process kb interupt
+        try:
+            while True:
+                out = multiMenu(msg)
+                match out:
+                    case "a":
+                        p = self.addHuman()
+                        if (p is not None):
+                            try:
+                                self.db.saveToDB(Teacher(p))
+                            except ValueError:
+                                clear()
+                                print(f"Email address already in use. ({p.email})")
+                                input("Press enter to return.")
+                    case "r": self.delTeacher()
+                    case "e":
+                        # Call edit human with the p out from printTeacher
+                        # this allows the user to confirm inputted ID
+                        self.editHuman(self.printTeacher("edit"))
+                    case "v": self.viewTeachers()
+                    case "c": self.regTeacherMenu()
+                    # Exit case
+                    case "q": raise KeyboardInterrupt
+        except KeyboardInterrupt:
+            return
+
+    def printTeacher(self, msg) -> Teacher | None:
         id = getInfo(
             {f"Please enter the ID of the teacher you want to {msg}.": checkINT}
         )[0]
@@ -24,6 +58,7 @@ class teacher(human.human):
         # Get data for specific ID
         table = findID(table, id)
 
+        # Store new data back to p object
         p.storeLookup(Human(
             table[1],  # First name
             table[2],  # Middle Name
@@ -60,54 +95,6 @@ class teacher(human.human):
                     input("Press enter to return.")
                 # Exit case
                 case "q": return
-
-    def delTeacher(self):
-        # Get ID and print for confirmation
-        # then save object it to p
-        p = self.printTeacher("delete")
-
-        choice = yn()
-        # If correct, get DB to drop
-        if (choice == "y"):
-            self.db.delFromDB(p)
-        # Any other case, just go to last menu
-        return
-
-    def teacherMenu(self) -> None:
-        msg = {
-            "a": "Add Teacher",
-            "r": "Remove Teacher",
-            "e": "Edit Teacher",
-            "v": "View Teachers",
-            "c": "Course Registrations",
-            "q": "Go Back"
-        }
-        # Process kb interupt
-        try:
-            while True:
-                out = multiMenu(msg)
-
-                match out:
-                    case "a":
-                        p = self.addHuman()
-                        if (p is not None):
-                            try:
-                                self.db.saveToDB(Teacher(p))
-                            except ValueError:
-                                clear()
-                                print("Email address already in use.")
-                                input("Press enter to return.")
-                    case "r": self.delTeacher()
-                    case "e":
-                        # Call edit human with the p out from printTeacher
-                        # this allows the user to confirm inputted ID
-                        self.editHuman(self.printTeacher("edit"))
-                    case "v": self.viewTeachers()
-                    case "c": self.regTeacherMenu()
-                    # Exit case
-                    case "q": raise KeyboardInterrupt
-        except KeyboardInterrupt:
-            return
 
     def viewAllTeachers(self) -> None:
         # Sort records by ID number accending
@@ -199,7 +186,7 @@ class teacher(human.human):
         except KeyboardInterrupt:
             return
 
-    def getTReg(self, msg: list[str]) -> sReg | None:
+    def getTReg(self, msg: list[str]) -> tReg | None:
         # Get student ID and info
         p = self.printTeacher(msg[0])
         if (p is None):
@@ -249,3 +236,15 @@ class teacher(human.human):
             ]
         )
         return filtered
+
+    def delTeacher(self) -> None:
+        # Get ID and print for confirmation
+        # then save object it to p
+        p = self.printTeacher("delete")
+
+        choice = yn()
+        # If correct, get DB to drop
+        if (choice == "y"):
+            self.db.delFromDB(p)
+        # Any other case, just go to last menu
+        return

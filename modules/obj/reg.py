@@ -7,7 +7,7 @@ class Reg:
             hID: int | None = None,  # Human ID (Student/Teacher)
             cID: int | None = None,  # Course ID
             ID: int | None = None,  # Registration ID
-            regTime: datetime | None = datetime.now()  # Registration Time (epoch)
+            regTime: datetime | None = datetime.now()  # Registration Time
 
     ) -> None:
         self.hID = hID

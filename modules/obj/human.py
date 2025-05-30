@@ -50,21 +50,3 @@ class Human:
             "ChosenName": self.chosenName,
             "Email": self.email
         }
-
-#     def saveValues(self) -> str:
-#         return f"""\
-# "{self.firstName}",
-# "{self.middleName}",
-# "{self.lastName}",
-# "{self.chosenName}",
-# "{self.email}")
-# """
-
-#     def updateValues(self) -> str:
-#         return f"""
-# FirstName =     "{self.firstName}",
-# MiddleName =    "{self.middleName}",
-# LastName =      "{self.lastName}",
-# ChosenName =    "{self.chosenName}",
-# Email =         "{self.email}"
-# """

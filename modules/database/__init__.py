@@ -16,10 +16,6 @@ class DB():
         # path = path.join(path, "data")
         path = path.joinpath("data")
 
-        # DEBUG remove line before running
-        # reason: vscode debugpy doesnt seem to like paths being passed to args...
-        path = Path("C:\\Users\\User\\Desktop\\Data")
-
         return path
 
     def __init__(self, dbDir: Path = __getWD()):
@@ -27,15 +23,19 @@ class DB():
         # TODO setup try except in case the containing directory doesnt exist,
         # and to prompt the user to correct this.
         if dbDir.is_dir() is False:
-            dbDir.mkdir()
+            try:
+                dbDir.mkdir()
+            except FileNotFoundError:
+                print("Given directory is not accessible.")
+                print("Does it exist?")
+                # Exit with error here
+                exit(2)
 
         # Set directory to data folder
         chdir(dbDir)
 
         # Connect to the main db file
         self.con = sqlite3.connect("sql.db")
-        # Create cursor
-        # self.cur = self.con.cursor()
 
         self.initDB()
 
@@ -118,6 +118,7 @@ Email   TEXT UNIQUE)
                 (values)
             )
         # Only reason this would happen is duplicate email addresses
+        # or an attempted injection
         except sqlite3.IntegrityError:
             raise ValueError("Record already registered")
         finally:
@@ -125,7 +126,6 @@ Email   TEXT UNIQUE)
             cur.close()
             self.con.commit()
 
-    # def delFromDB(self, DBObject: obj.Student | obj.Teacher | obj.Course) -> None:
     def delFromDB(
             self,
             DBObject: obj.Student | obj.Teacher | obj.Course | obj.sReg | obj.tReg
@@ -146,7 +146,6 @@ Email   TEXT UNIQUE)
         cur.close()
         self.con.commit()
 
-    # def updateDB(self, DBObject: obj.Student | obj.Teacher | obj.Course) -> None:
     def updateDB(
             self,
             DBObject: obj.Student | obj.Teacher | obj.Course | obj.sReg | obj.tReg

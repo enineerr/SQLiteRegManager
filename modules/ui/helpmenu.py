@@ -5,7 +5,6 @@ class helpMenu:
     def __init__(self):
         msg = {
             "-h --help": "Print this message",
-            "-t --tui": "Enable TUI mode",
             "-d --dbpath <path>": "Set path to the data dir relative to CWD"
         }
         # Get max length of cmdflag side of help menu

@@ -1,6 +1,4 @@
 class Course():
-    # def __init__(self) -> None:
-    #     pass
     def __init__(
             self,
             courseName: str | None = "",

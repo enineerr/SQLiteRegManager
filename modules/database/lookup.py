@@ -3,6 +3,63 @@ from datetime import datetime
 
 
 @staticmethod
+def getTable(
+    DBObject: obj.Student | obj.Teacher | obj.Course | obj.sReg | obj.tReg
+) -> list[str | list[str]]:
+    match type(DBObject):
+        # [0] -> Table Name
+        # [1] -> ID Name
+        # [2] -> List of columns
+        case obj.Student: table = ["Students", "StudentID"]
+        case obj.Teacher: table = ["Teachers", "TeacherID"]
+        case obj.Course:
+            table = [
+                "Courses",
+                "CourseID",
+                [
+                    "CourseName",
+                    "Level"
+                ]
+            ]
+            # Return now to prevent human Placeholders
+            return table
+        case obj.sReg:
+            table = [
+                "StudentRegistrations",
+                "RegistrationID",
+                [
+                    "StudentID",
+                    "CourseID",
+                    "RegistrationTime"
+                ]
+            ]
+            # Return now to prevent human Placeholders
+            return table
+        case obj.tReg:
+            table = [
+                "TeacherRegistrations",
+                "RegistrationID",
+                [
+                    "TeacherID",
+                    "CourseID",
+                    "RegistrationTime"
+                ]
+            ]
+            # Return now to prevent human Placeholders
+            return table
+
+    # Human Placeholders
+    table.append([
+        "FirstName",
+        "MiddleName",
+        "LastName",
+        "ChosenName",
+        "Email"
+    ])
+    return table
+
+
+@staticmethod
 def getRegistrations(cur, DBObject: obj.sReg | obj.tReg) -> list[list[str | int | datetime]]:
     match type(DBObject):
         case obj.sReg:
@@ -51,6 +108,7 @@ LEFT JOIN Courses ON TeacherRegistrations.CourseID = Courses.CourseID
                 ]
             )
     return listOut
+
 
 @staticmethod
 def allRecords(
@@ -123,60 +181,3 @@ def allRecords(
                     )
 
     return listOut
-
-
-@staticmethod
-def getTable(
-    DBObject: obj.Student | obj.Teacher | obj.Course | obj.sReg | obj.tReg
-) -> list[str | list[str]]:
-    match type(DBObject):
-        # [0] -> Table Name
-        # [1] -> ID Name
-        # [2] -> List of columns
-        case obj.Student: table = ["Students", "StudentID"]
-        case obj.Teacher: table = ["Teachers", "TeacherID"]
-        case obj.Course:
-            table = [
-                "Courses",
-                "CourseID",
-                [
-                    "CourseName",
-                    "Level"
-                ]
-            ]
-            # Return now to prevent human Placeholders
-            return table
-        case obj.sReg:
-            table = [
-                "StudentRegistrations",
-                "RegistrationID",
-                [
-                    "StudentID",
-                    "CourseID",
-                    "RegistrationTime"
-                ]
-            ]
-            # Return now to prevent human Placeholders
-            return table
-        case obj.tReg:
-            table = [
-                "TeacherRegistrations",
-                "RegistrationID",
-                [
-                    "TeacherID",
-                    "CourseID",
-                    "RegistrationTime"
-                ]
-            ]
-            # Return now to prevent human Placeholders
-            return table
-
-    # Human Placeholders
-    table.append([
-        "FirstName",
-        "MiddleName",
-        "LastName",
-        "ChosenName",
-        "Email"
-    ])
-    return table

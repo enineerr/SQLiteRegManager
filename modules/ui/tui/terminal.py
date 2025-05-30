@@ -2,9 +2,9 @@ from copy import deepcopy
 
 
 @staticmethod
-def clear():
-    # I don't like this
-    # the day python implements a terminal clear, the world will be whole
+def clear() -> None:
+    # I don't like this, but its the closest effect to clearing
+    # without having compat issues with some terminals
     print("\n"*100)
 
 
@@ -21,13 +21,17 @@ def maxLineLength(calcLines: list[str]) -> int:
 def printMenu(msg: dict[str, str]) -> None:
     for k, v in msg.items():
         # Add a basic separator
+        # "key: value"
         k += ":"
         print(k, v)
 
 
 @staticmethod
 def padAllItems(inL: list[list[str | int]]) -> list[list[str]]:
+    # Deepcopy used here to prevent messing up previous objects
+    # Didn't have the patience for tuples
     l = deepcopy(inL)
+
     # Create length list for comparison
     length = []
     for i in range(len(l[0])):
@@ -58,8 +62,11 @@ def padAllItems(inL: list[list[str | int]]) -> list[list[str]]:
 
 @staticmethod
 def printObj(recsIn: list[list[int | str]], msg: list[str]) -> None:
-    # Add header
+    # Deepcopy used here to prevent messing up previous objects
+    # Didn't have the patience for tuples
     recs = deepcopy(recsIn)
+
+    # Add header
     recs.insert(0, msg)
     recs = padAllItems(recs)
 
