@@ -10,8 +10,8 @@ class DB():
     def __getWD() -> Path:
         # Get the "modules" directory
         path = Path(__file__)
-        # Get the ../modules directory
-        path = path.parent
+        # Get the main file directory
+        path = path.parent.parent.parent
         # Join data to path
         # path = path.join(path, "data")
         path = path.joinpath("data")

@@ -9,7 +9,7 @@ def checkName(inp: str) -> bool:
             case "-" | " " | ".": pass
             case _:
                 # Make sure everything else is a letter
-                if (i.isalpha is not True):
+                if (i.isalpha() is not True):
                     # otherwise return false
                     return False
 
