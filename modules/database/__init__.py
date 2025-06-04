@@ -20,8 +20,6 @@ class DB():
 
     def __init__(self, dbDir: Path = __getWD()):
         # Make sure data folder exists
-        # TODO setup try except in case the containing directory doesnt exist,
-        # and to prompt the user to correct this.
         if dbDir.is_dir() is False:
             try:
                 dbDir.mkdir()
